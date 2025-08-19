@@ -1,0 +1,147 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String?  @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // User preferences
+  preferences UserPreferences?
+  
+  // Chat sessions
+  sessions ChatSession[]
+  
+  // API usage tracking
+  apiUsage ApiUsage[]
+
+  @@map("users")
+}
+
+model UserPreferences {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Model toggles
+  enableSonar    Boolean @default(true)
+  enableSonnet   Boolean @default(true)
+  enableDeepseek Boolean @default(true)
+  enableGpt      Boolean @default(true)
+
+  // API keys (encrypted)
+  openaiKey     String?
+  anthropicKey  String?
+  perplexityKey String?
+  deepseekKey   String?
+
+  // UI preferences
+  theme         String  @default("light")
+  language      String  @default("en")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_preferences")
+}
+
+model ChatSession {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Chat messages
+  messages ChatMessage[]
+
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  // Message content
+  query     String
+  
+  // AI responses
+  sonarResponse    String?
+  sonnetResponse   String?
+  deepseekResponse String?
+  gptResponse      String?
+
+  // Metadata
+  responseTime Int? // milliseconds
+  tokensUsed   Int?
+  
+  createdAt DateTime @default(now())
+
+  @@map("chat_messages")
+}
+
+model ApiUsage {
+  id     String @id @default(cuid())
+  userId String?
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Usage tracking
+  model      String // sonar, sonnet, deepseek, gpt
+  endpoint   String // user_api, fallback_api
+  
+  // Metrics
+  requestCount Int      @default(1)
+  tokensUsed   Int?
+  responseTime Int? // milliseconds
+  
+  // Status
+  success Boolean @default(true)
+  error   String?
+
+  // Time tracking
+  date      DateTime @default(now()) @db.Date
+  createdAt DateTime @default(now())
+
+  @@unique([userId, model, endpoint, date])
+  @@map("api_usage")
+}
+
+model SystemMetrics {
+  id String @id @default(cuid())
+
+  // Performance metrics
+  avgResponseTime Float
+  totalRequests   Int
+  errorRate       Float
+  
+  // Resource usage
+  memoryUsage Float
+  cpuUsage    Float
+  
+  // API health
+  sonarHealth    Boolean @default(true)
+  sonnetHealth   Boolean @default(true)
+  deepseekHealth Boolean @default(true)
+  gptHealth      Boolean @default(true)
+
+  // Time tracking
+  timestamp DateTime @default(now())
+  date      DateTime @default(now()) @db.Date
+
+  @@unique([date])
+  @@map("system_metrics")
+}
