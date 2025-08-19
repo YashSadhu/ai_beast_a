@@ -103,189 +103,87 @@ export default function Page() {
   }, [chatHistory, sonarResponse, sonnetResponse, deepseekResponse, gpt5Response])
 
   const callSonarApi = async (message: string): Promise<string> => {
-    if (apiKeys.perplexity) {
-      // Use user's Perplexity API key
-      const response = await fetch("https://api.perplexity.ai/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKeys.perplexity}`,
-        },
-        body: JSON.stringify({
-          model: "llama-3.1-sonar-large-128k-online",
-          messages: [{ role: "user", content: message }],
-        }),
-      })
+    const response = await fetch("/api/chat/sonar", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message,
+        userApiKey: apiKeys.perplexity,
+      }),
+    })
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const data = await response.json()
-      return data.choices[0].message.content
-    } else {
-      // Use default API
-      const response = await fetch("https://agent-prod.studio.lyzr.ai/v3/inference/chat/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": process.env.LYZR_SONAR_API_KEY || "",
-        },
-        body: JSON.stringify({
-          user_id: "fametheholyboooy@gmail.com",
-          agent_id: "68a431a658203a80ebac7ef4",
-          session_id: "68a431a658203a80ebac7ef4-kncehfvdb7",
-          message: message,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const data = await response.json()
-      return data.response || data.message || JSON.stringify(data)
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
     }
+
+    const data = await response.json()
+    return data.content
   }
 
   const callSonnetApi = async (message: string): Promise<string> => {
-    if (apiKeys.anthropic) {
-      // Use user's Anthropic API key
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKeys.anthropic,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({
-          model: "claude-3-5-sonnet-20241022",
-          max_tokens: 4000,
-          messages: [{ role: "user", content: message }],
-        }),
-      })
+    const response = await fetch("/api/chat/sonnet", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message,
+        userApiKey: apiKeys.anthropic,
+      }),
+    })
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const data = await response.json()
-      return data.content[0].text
-    } else {
-      // Use default API
-      const response = await fetch("https://agent-prod.studio.lyzr.ai/v3/inference/chat/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": process.env.LYZR_SONNET_API_KEY || "",
-        },
-        body: JSON.stringify({
-          user_id: "gabrukaand@g.com",
-          agent_id: "68a432d16e1baa11945cbcb3",
-          session_id: "68a432d16e1baa11945cbcb3-2og8831g8t8",
-          message: message,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const data = await response.json()
-      return data.response || data.message || JSON.stringify(data)
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
     }
+
+    const data = await response.json()
+    return data.content
   }
 
   const callDeepseekApi = async (message: string): Promise<string> => {
-    if (apiKeys.deepseek) {
-      // Use user's DeepSeek API key
-      const response = await fetch("https://api.deepseek.com/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKeys.deepseek}`,
-        },
-        body: JSON.stringify({
-          model: "deepseek-reasoner",
-          messages: [{ role: "user", content: message }],
-        }),
-      })
+    const response = await fetch("/api/chat/deepseek", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message,
+        userApiKey: apiKeys.deepseek,
+      }),
+    })
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const data = await response.json()
-      return data.choices[0].message.content
-    } else {
-      // Use default API
-      const response = await fetch("https://agent-prod.studio.lyzr.ai/v3/inference/chat/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": process.env.LYZR_DEEPSEEK_API_KEY || "",
-        },
-        body: JSON.stringify({
-          user_id: "abkcaa@gmaill.com",
-          agent_id: "68a4344658203a80ebac7f48",
-          session_id: "68a4344658203a80ebac7f48-6294ig6loc8",
-          message: message,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const data = await response.json()
-      return data.response || data.message || JSON.stringify(data)
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
     }
+
+    const data = await response.json()
+    return data.content
   }
 
   const callGpt5Api = async (message: string): Promise<string> => {
-    if (apiKeys.openai) {
-      // Use user's OpenAI API key
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKeys.openai}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4o",
-          messages: [{ role: "user", content: message }],
-        }),
-      })
+    const response = await fetch("/api/chat/gpt", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message,
+        userApiKey: apiKeys.openai,
+      }),
+    })
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const data = await response.json()
-      return data.choices[0].message.content
-    } else {
-      // Use default API
-      const response = await fetch("https://agent-prod.studio.lyzr.ai/v3/inference/chat/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": process.env.LYZR_GPT_API_KEY || "",
-        },
-        body: JSON.stringify({
-          user_id: "abkcaa@gmaill.com",
-          agent_id: "68a4381929d545bad109ae57",
-          session_id: "68a4381929d545bad109ae57-d6oi8gmsbit",
-          message: message,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const data = await response.json()
-      return data.response || data.message || JSON.stringify(data)
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
     }
+
+    const data = await response.json()
+    return data.content
   }
 
   const enhancePrompt = async () => {
@@ -293,29 +191,23 @@ export default function Page() {
 
     setIsEnhancing(true)
     try {
-      const enhancementPrompt = `Enhance this prompt to be more detailed, specific, and effective. Return ONLY the improved prompt, no explanations or additional text: "${query}"`
-
-      const response = await fetch("https://agent-prod.studio.lyzr.ai/v3/inference/chat/", {
+      const response = await fetch("/api/enhance", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": process.env.LYZR_DEEPSEEK_API_KEY || "",
         },
         body: JSON.stringify({
-          user_id: "abkcaa@gmaill.com",
-          agent_id: "68a4344658203a80ebac7f48",
-          session_id: "68a4344658203a80ebac7f48-enhance",
-          message: enhancementPrompt,
+          query,
         }),
       })
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorData = await response.json()
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
       }
 
       const data = await response.json()
-      const enhancedPrompt = data.response || data.message || query
-      setQuery(enhancedPrompt)
+      setQuery(data.enhancedPrompt)
     } catch (error) {
       console.error("Failed to enhance prompt:", error)
     } finally {

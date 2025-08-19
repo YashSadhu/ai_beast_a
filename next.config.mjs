@@ -26,9 +26,7 @@ const nextConfig = {
   httpAgentOptions: {
     keepAlive: true,
   },
-  output: 'standalone',
-  // Enable SWC minification for better performance
-  swcMinify: true,
+  // Remove standalone for now due to Windows symlink issues
   // Optimize bundle size
   modularizeImports: {
     'lucide-react': {
